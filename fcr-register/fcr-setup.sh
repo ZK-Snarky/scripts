@@ -2,7 +2,6 @@
 # Quick setup for FCR Register script
 # Run: bash fcr-setup.sh
 
-# Use pip3 if pip not found
 PIP=$(command -v pip3 || command -v pip)
 PYTHON=$(command -v python3 || command -v python)
 
@@ -13,7 +12,14 @@ if [ -z "$PIP" ]; then
 fi
 
 echo "Installing dependencies..."
-$PIP install playwright
+
+# Try normal install first, fall back to trusted-host for corporate firewalls
+$PIP install playwright 2>/dev/null
+if [ $? -ne 0 ]; then
+    echo "Normal install failed (likely SSL/firewall). Retrying with trusted hosts..."
+    $PIP install --trusted-host pypi.org --trusted-host files.pythonhosted.org playwright
+fi
+
 $PYTHON -m playwright install chromium
 
 echo ""
